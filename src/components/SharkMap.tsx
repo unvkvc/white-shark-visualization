@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-
-import type { FeatureCollection, Point } from 'geojson';
+import type { Map as MapLibreMap } from 'maplibre-gl';
 import type { SharkPosition } from '../types/SharkPosition';
 
 interface SharkMapProps {
@@ -10,69 +8,88 @@ interface SharkMapProps {
 }
 
 function SharkMap({ positions }: SharkMapProps) {
-  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<MapLibreMap | null>(null);
 
   useEffect(() => {
-    if (!mapContainer.current) {
+    if (!mapContainerRef.current) {
       return;
     }
 
-    const sharkGeoJson: FeatureCollection<
-      Point,
-      {
-        shark: string;
-        sex: string;
-      }
-    > = {
-      type: 'FeatureCollection',
-      features: positions.map((position) => ({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [position.lon, position.lat],
-        },
-        properties: {
-          shark: position.shark,
-          sex: position.sex,
-        },
-      })),
-    };
-
     const map = new maplibregl.Map({
-      container: mapContainer.current,
+      container: mapContainerRef.current,
       style: 'https://demotiles.maplibre.org/style.json',
       center: [-119.5, 34.4],
-      zoom: 7,
+      zoom: 8,
     });
 
-    map.addControl(new maplibregl.NavigationControl());
+    mapRef.current = map;
 
     map.on('load', () => {
-      map.addSource('sharks', {
+      map.addSource('shark-positions', {
         type: 'geojson',
-        data: sharkGeoJson,
+        data: {
+          type: 'FeatureCollection',
+          features: [],
+        },
       });
 
       map.addLayer({
-        id: 'sharks',
+        id: 'shark-positions',
         type: 'circle',
-        source: 'sharks',
+        source: 'shark-positions',
         paint: {
-          'circle-radius': 2,
-          'circle-color': '#ff3333',
-          'circle-opacity': 0.5,
+          'circle-radius': 3,
+          'circle-color': '#e63946',
+          'circle-opacity': 0.6,
         },
       });
     });
 
     return () => {
       map.remove();
+      mapRef.current = null;
     };
+  }, []);
+
+    useEffect(() => {
+    const map = mapRef.current;
+
+    if (!map) {
+      return;
+    }
+
+    const updateSource = () => {
+      const source = map.getSource(
+        'shark-positions',
+      ) as maplibregl.GeoJSONSource | undefined;
+
+      source?.setData({
+        type: 'FeatureCollection',
+        features: positions.map((position) => ({
+          type: 'Feature',
+          properties: {
+            shark: position.shark,
+            date: position.DateTimeUTC,
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: [position.lon, position.lat],
+          },
+        })),
+      });
+    };
+
+    if (map.loaded()) {
+      updateSource();
+    } else {
+      map.once('load', updateSource);
+    }
   }, [positions]);
 
-  return (
+    return (
     <div
-      ref={mapContainer}
+      ref={mapContainerRef}
       style={{
         width: '100%',
         height: '600px',
