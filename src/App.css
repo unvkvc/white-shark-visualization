@@ -1,3 +1,94 @@
+body {
+  margin: 0;
+  font-family:
+    Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f5f7fa;
+  color: #1f2933;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  padding: 20px 32px;
+  background: white;
+  border-bottom: 1px solid #d9e2ec;
+}
+
+.navigation h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.navigation p {
+  margin: 4px 0 0;
+  color: #627d98;
+}
+
+.navigation nav {
+  display: flex;
+  gap: 12px;
+}
+
+.navigation-link {
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #486581;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.navigation-link:hover {
+  background: #f0f4f8;
+}
+
+.navigation-link.active {
+  background: #2563eb;
+  color: white;
+}
+
+.app-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.overview-grid,
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  padding: 20px;
+  background: white;
+  border: 1px solid #d9e2ec;
+  border-radius: 12px;
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+@media (max-width: 800px) {
+  .navigation {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .overview-grid,
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;

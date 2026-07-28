@@ -1,13 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { SharkPosition } from './types/SharkPosition';
-import { loadSharkPositions } from './utils/loadSharks';
-import SharkMap from './components/SharkMap';
+import { useEffect, useMemo, useState } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
+import type { SharkPosition } from "./types/SharkPosition";
+import { loadSharkPositions } from "./utils/loadSharks";
+import Navigation from "./components/Navigation";
+import OverviewPage from "./pages/OverviewPage";
+import MovementPage from "./pages/MovementPage";
+import AnalysisPage from "./pages/AnalysisPage";
+
+import "maplibre-gl/dist/maplibre-gl.css";
 
 function App() {
   const [positions, setPositions] = useState<SharkPosition[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedShark, setSelectedShark] = useState<string>('ALL');
+  const [selectedShark, setSelectedShark] = useState<string>("ALL");
 
   useEffect(() => {
     async function loadData() {
@@ -18,7 +25,7 @@ function App() {
         const message =
           loadError instanceof Error
             ? loadError.message
-            : 'An unknown error occurred';
+            : "An unknown error occurred";
 
         setError(message);
       } finally {
@@ -48,10 +55,10 @@ function App() {
     return {
       totalPositions: positions.length,
       uniqueSharks: sharks.length,
-      femaleSharks: sharks.filter((shark) => shark.sex === 'F').length,
-      maleSharks: sharks.filter((shark) => shark.sex === 'M').length,
+      femaleSharks: sharks.filter((shark) => shark.sex === "F").length,
+      maleSharks: sharks.filter((shark) => shark.sex === "M").length,
       unknownSexSharks: sharks.filter(
-        (shark) => shark.sex !== 'F' && shark.sex !== 'M',
+        (shark) => shark.sex !== "F" && shark.sex !== "M",
       ).length,
       earliestDate: dates[0] ?? null,
       latestDate: dates[dates.length - 1] ?? null,
@@ -65,14 +72,54 @@ function App() {
   }, [positions]);
 
   const displayedPositions = useMemo(() => {
-    if (selectedShark === 'ALL') {
+    if (selectedShark === "ALL") {
       return positions;
     }
 
-    return positions.filter(
-      (position) => position.shark === selectedShark,
-    );
+    return positions.filter((position) => position.shark === selectedShark);
   }, [positions, selectedShark]);
+
+  const sharkStatistics = useMemo(() => {
+    if (selectedShark === "ALL" || displayedPositions.length === 0) {
+      return null;
+    }
+
+    const sorted = displayedPositions
+      .map((position) => ({
+        position,
+        timestamp: new Date(position.DateTimeUTC).getTime(),
+      }))
+      .filter((item) => !Number.isNaN(item.timestamp))
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    if (sorted.length === 0) {
+      return null;
+    }
+
+    let totalGap = 0;
+    let largestGap = 0;
+
+    for (let i = 1; i < sorted.length; i++) {
+      const gap = sorted[i].timestamp - sorted[i - 1].timestamp;
+
+      totalGap += gap;
+
+      if (gap > largestGap) {
+        largestGap = gap;
+      }
+    }
+
+    return {
+      detections: displayedPositions.length,
+      validDetections: sorted.length,
+      invalidDetections: displayedPositions.length - sorted.length,
+      first: sorted[0].position.DateTimeUTC,
+      last: sorted[sorted.length - 1].position.DateTimeUTC,
+      averageGapHours:
+        sorted.length > 1 ? totalGap / (sorted.length - 1) / 1000 / 60 / 60 : 0,
+      largestGapHours: largestGap / 1000 / 60 / 60,
+    };
+  }, [displayedPositions, selectedShark]);
 
   if (loading) {
     return <p>Loading shark data...</p>;
@@ -89,46 +136,37 @@ function App() {
   }
 
   return (
-    <main>
-      <h1>White Shark Visualization</h1>
-      <p>Information Visualization Project</p>
+    <BrowserRouter>
+      <div>
+        <Navigation />
 
-      <h2>Dataset summary</h2>
+        <main>
+          <Routes>
+            <Route
+              path="/"
+              element={<OverviewPage statistics={statistics} />}
+            />
 
-      <p>Total positions: {statistics.totalPositions.toLocaleString()}</p>
-      <p>Unique sharks: {statistics.uniqueSharks}</p>
-      <p>Female sharks: {statistics.femaleSharks}</p>
-      <p>Male sharks: {statistics.maleSharks}</p>
-      <p>Unknown sex: {statistics.unknownSexSharks}</p>
+            <Route
+              path="/map"
+              element={
+                <MovementPage
+                  displayedPositions={displayedPositions}
+                  sharkIds={sharkIds}
+                  selectedShark={selectedShark}
+                  sharkStatistics={sharkStatistics}
+                  onSelectedSharkChange={setSelectedShark}
+                />
+              }
+            />
 
-      <p>
-        Tracking period:{' '}
-        {statistics.earliestDate?.toLocaleDateString()} –{' '}
-        {statistics.latestDate?.toLocaleDateString()}
-      </p>
+            <Route path="/analysis" element={<AnalysisPage />} />
 
-      <div style={{ marginBottom: '20px' }}>
-        <label htmlFor="sharkSelect">
-          <strong>Select shark: </strong>
-        </label>
-
-        <select
-          id="sharkSelect"
-          value={selectedShark}
-          onChange={(event) => setSelectedShark(event.target.value)}
-        >
-          <option value="ALL">All sharks</option>
-
-          {sharkIds.map((id) => (
-            <option key={id} value={id}>
-              {id}
-            </option>
-          ))}
-        </select>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
       </div>
-
-      <SharkMap positions={displayedPositions} />
-    </main>
+    </BrowserRouter>
   );
 }
 
