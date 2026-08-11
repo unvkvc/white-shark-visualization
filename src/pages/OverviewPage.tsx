@@ -10,6 +10,8 @@ interface DatasetStatistics {
   unknownSexSharks: number;
   earliestDate: Date | null;
   latestDate: Date | null;
+  validTimestamps: number;
+  invalidTimestamps: number;
 }
 
 interface OverviewPageProps {
@@ -42,12 +44,20 @@ function OverviewPage({ statistics }: OverviewPageProps) {
       <header
         className="overview-hero"
         style={{
-          backgroundImage: `linear-gradient(
-      90deg,
-        rgba(2, 15, 28, 0.94) 0%,
-        rgba(3, 37, 56, 0.82) 55%,
-        rgba(4, 71, 91, 0.72) 100%
-    ), url(${sharkBackground})`,
+          backgroundImage: `
+      radial-gradient(
+        circle at top right,
+        rgba(45, 212, 191, 0.38),
+        transparent 45%
+      ),
+      linear-gradient(
+        110deg,
+        rgba(2, 8, 20, 0.97) 0%,
+        rgba(6, 38, 67, 0.88) 45%,
+        rgba(8, 105, 135, 0.68) 100%
+      ),
+      url(${sharkBackground})
+    `,
         }}
       >
         <div>
@@ -122,7 +132,12 @@ function OverviewPage({ statistics }: OverviewPageProps) {
 
           <article className="statistic-card">
             <div className="statistic-card-header">
-              <span className="statistic-icon statistic-icon-text">♀</span>
+              <span
+                className="statistic-icon statistic-icon-text"
+                aria-hidden="true"
+              >
+                ♀
+              </span>
 
               <span className="statistic-label">Female sharks</span>
             </div>
@@ -138,7 +153,12 @@ function OverviewPage({ statistics }: OverviewPageProps) {
 
           <article className="statistic-card">
             <div className="statistic-card-header">
-              <span className="statistic-icon statistic-icon-text">♂</span>
+              <span
+                className="statistic-icon statistic-icon-text"
+                aria-hidden="true"
+              >
+                ♂
+              </span>
 
               <span className="statistic-label">Male sharks</span>
             </div>
@@ -152,7 +172,12 @@ function OverviewPage({ statistics }: OverviewPageProps) {
 
           <article className="statistic-card">
             <div className="statistic-card-header">
-              <span className="statistic-icon statistic-icon-text">?</span>
+              <span
+                className="statistic-icon statistic-icon-text"
+                aria-hidden="true"
+              >
+                ?
+              </span>
 
               <span className="statistic-label">Unknown sex</span>
             </div>
@@ -183,6 +208,53 @@ function OverviewPage({ statistics }: OverviewPageProps) {
               to {formatDate(statistics.latestDate)}
             </span>
           </article>
+
+          <article className="statistic-card">
+            <div className="statistic-card-header">
+              <span
+                className="statistic-icon statistic-icon-text statistic-icon-success"
+                aria-hidden="true"
+              >
+                ✓
+              </span>
+
+              <span className="statistic-label">Valid timestamps</span>
+            </div>
+
+            <strong className="statistic-value">
+              {statistics.validTimestamps.toLocaleString()}
+            </strong>
+
+            <span className="statistic-description">
+              Observations available for chronological animation
+            </span>
+          </article>
+
+          <article className="statistic-card">
+            <div className="statistic-card-header">
+              <span
+                className="statistic-icon statistic-icon-text statistic-icon-warning"
+                aria-hidden="true"
+              >
+                !
+              </span>
+
+              <span className="statistic-label">Incomplete timestamps</span>
+            </div>
+
+            <strong className="statistic-value">
+              <p>
+                {statistics.invalidTimestamps.toLocaleString()} observations
+                contain incomplete timestamps. They remain available for spatial
+                summaries but are excluded from chronological movement
+                animation.
+              </p>
+            </strong>
+
+            <span className="statistic-description">
+              Observations excluded from chronological animation
+            </span>
+          </article>
         </div>
       </section>
 
@@ -202,9 +274,9 @@ function OverviewPage({ statistics }: OverviewPageProps) {
           <h3>Study area</h3>
 
           <p>
-            The observations were collected from white sharks tracked in coastal
-            waters around New South Wales, Australia. The movement explorer
-            displays where individual sharks were recorded through time.
+            The observations were collected from tagged white sharks tracked in
+            coastal waters off New South Wales, Australia. The Movement Explorer
+            shows where individual sharks were recorded over time.
           </p>
         </article>
 

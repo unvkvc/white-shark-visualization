@@ -1,5 +1,11 @@
-import type { SharkPosition } from "../types/SharkPosition";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import AgeComparisonMap from "../components/AgeComparisonMap";
+
 import SharkMap from "../components/SharkMap";
+import type { SharkPosition } from "../types/SharkPosition";
+
+import "./MovementPage.css";
 
 interface SharkStatistics {
   detections: number;
@@ -12,6 +18,7 @@ interface SharkStatistics {
 }
 
 interface MovementPageProps {
+  positions: SharkPosition[];
   displayedPositions: SharkPosition[];
   sharkIds: string[];
   selectedShark: string;
@@ -19,76 +26,226 @@ interface MovementPageProps {
   onSelectedSharkChange: (sharkId: string) => void;
 }
 
+type ExplorationMode = "INDIVIDUAL" | "AGE_COMPARISON";
+
 function MovementPage({
+  positions,
   displayedPositions,
   sharkIds,
   selectedShark,
   sharkStatistics,
   onSelectedSharkChange,
 }: MovementPageProps) {
+  const [searchParams] = useSearchParams();
+
+  const [explorationMode, setExplorationMode] =
+    useState<ExplorationMode>("INDIVIDUAL");
+
+  const [selectedAgeClasses, setSelectedAgeClasses] = useState<string[]>([]);
+
+  useEffect(() => {
+    const sharkFromUrl = searchParams.get("shark");
+
+    if (sharkFromUrl && sharkIds.includes(sharkFromUrl)) {
+      onSelectedSharkChange(sharkFromUrl);
+      setExplorationMode("INDIVIDUAL");
+    }
+  }, [searchParams, sharkIds, onSelectedSharkChange]);
+
+  const ageClasses = useMemo(() => {
+    return Array.from(
+      new Set(
+        positions
+          .map((position) => String(position.ageclass).trim())
+          .filter((ageClass) => ageClass !== ""),
+      ),
+    ).sort((a, b) => {
+      if (a === "YOY") {
+        return -1;
+      }
+
+      if (b === "YOY") {
+        return 1;
+      }
+
+      return Number(a) - Number(b);
+    });
+  }, [positions]);
+
+  useEffect(() => {
+    if (selectedAgeClasses.length === 0 && ageClasses.length > 0) {
+      setSelectedAgeClasses(ageClasses);
+    }
+  }, [ageClasses, selectedAgeClasses.length]);
+
+  const ageComparisonPositions = useMemo(() => {
+    return positions.filter((position) =>
+      selectedAgeClasses.includes(String(position.ageclass).trim()),
+    );
+  }, [positions, selectedAgeClasses]);
+
+  function toggleAgeClass(ageClass: string) {
+    setSelectedAgeClasses((currentAgeClasses) => {
+      if (currentAgeClasses.includes(ageClass)) {
+        return currentAgeClasses.filter(
+          (selectedClass) => selectedClass !== ageClass,
+        );
+      }
+
+      return [...currentAgeClasses, ageClass];
+    });
+  }
+
   return (
-    <section>
-      <h2>Movement Explorer</h2>
+    <section className="movement-page">
+      <header className="movement-header">
+        <p className="movement-eyebrow">Spatial and temporal exploration</p>
 
-      <p>
-        Select an individual shark and explore its recorded locations through
-        time.
-      </p>
+        <h2>Movement Explorer</h2>
 
-      <div style={{ marginBottom: "20px" }}>
-        <label htmlFor="sharkSelect">
-          <strong>Select shark: </strong>
-        </label>
+        <p>
+          Explore individual shark movements or compare spatial patterns across
+          developmental stages.
+        </p>
+      </header>
 
-        <select
-          id="sharkSelect"
-          value={selectedShark}
-          onChange={(event) => onSelectedSharkChange(event.target.value)}
+      <div className="movement-mode-selector">
+        <button
+          type="button"
+          className={
+            explorationMode === "INDIVIDUAL"
+              ? "movement-mode-button active"
+              : "movement-mode-button"
+          }
+          onClick={() => setExplorationMode("INDIVIDUAL")}
         >
-          <option value="ALL">All sharks</option>
+          Individual shark
+        </button>
 
-          {sharkIds.map((id) => (
-            <option key={id} value={id}>
-              {id}
-            </option>
-          ))}
-        </select>
+        <button
+          type="button"
+          className={
+            explorationMode === "AGE_COMPARISON"
+              ? "movement-mode-button active"
+              : "movement-mode-button"
+          }
+          onClick={() => setExplorationMode("AGE_COMPARISON")}
+        >
+          Compare age groups
+        </button>
       </div>
 
-      {selectedShark === "ALL" && (
-        <p>Select a shark to display its movement animation.</p>
+      {explorationMode === "INDIVIDUAL" && (
+        <>
+          <section className="movement-controls-card">
+            <label htmlFor="sharkSelect">Select shark</label>
+
+            <select
+              id="sharkSelect"
+              value={selectedShark}
+              onChange={(event) => onSelectedSharkChange(event.target.value)}
+            >
+              <option value="ALL">Choose an individual shark</option>
+
+              {sharkIds.map((id) => (
+                <option key={id} value={id}>
+                  Shark {id}
+                </option>
+              ))}
+            </select>
+          </section>
+
+          {selectedShark === "ALL" && (
+            <section className="movement-empty-state">
+              <h3>Select a shark to begin</h3>
+
+              <p>
+                The map will display its chronological positions and movement
+                animation.
+              </p>
+            </section>
+          )}
+
+          {selectedShark !== "ALL" && sharkStatistics && (
+            <div className="movement-compact-summary">
+              <span>
+                <strong>Shark {selectedShark}</strong>
+              </span>
+
+              <span>
+                {sharkStatistics.validDetections.toLocaleString()} chronological
+                positions
+              </span>
+
+              <span>
+                {new Date(sharkStatistics.first).toLocaleDateString("en-GB")} –{" "}
+                {new Date(sharkStatistics.last).toLocaleDateString("en-GB")}
+              </span>
+
+              <span>
+                Average gap: {sharkStatistics.averageGapHours.toFixed(2)} h
+              </span>
+            </div>
+          )}
+
+          <section className="movement-map-card">
+            <SharkMap
+              positions={selectedShark === "ALL" ? [] : displayedPositions}
+            />
+          </section>
+        </>
       )}
 
-      {selectedShark !== "ALL" && sharkStatistics && (
-        <div style={{ marginBottom: "20px" }}>
-          <h3>Selected shark statistics</h3>
+      {explorationMode === "AGE_COMPARISON" && (
+        <>
+          <section className="movement-controls-card age-comparison-controls">
+            <div>
+              <strong>Age classes</strong>
 
-          <p>Detections: {sharkStatistics.detections.toLocaleString()}</p>
+              <p>
+                Select the developmental stages to include in the comparison.
+              </p>
+            </div>
 
-          <p>
-            Valid timestamps: {sharkStatistics.validDetections.toLocaleString()}
-          </p>
+            <div className="age-class-options">
+              {ageClasses.map((ageClass) => (
+                <label className="age-class-option" key={ageClass}>
+                  <input
+                    type="checkbox"
+                    checked={selectedAgeClasses.includes(ageClass)}
+                    onChange={() => toggleAgeClass(ageClass)}
+                  />
 
-          <p>
-            Invalid timestamps:{" "}
-            {sharkStatistics.invalidDetections.toLocaleString()}
-          </p>
+                  <span>
+                    {ageClass === "YOY"
+                      ? "Young of the Year"
+                      : `Age class ${ageClass}`}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </section>
 
-          <p>
-            First detection: {new Date(sharkStatistics.first).toLocaleString()}
-          </p>
+          <div className="movement-compact-summary">
+            <span>
+              <strong>Age-group comparison</strong>
+            </span>
 
-          <p>
-            Last detection: {new Date(sharkStatistics.last).toLocaleString()}
-          </p>
+            <span>{selectedAgeClasses.length} selected age classes</span>
 
-          <p>Average gap: {sharkStatistics.averageGapHours.toFixed(2)} hours</p>
+            <span>
+              {ageComparisonPositions.length.toLocaleString()} positions
+            </span>
+          </div>
 
-          <p>Largest gap: {sharkStatistics.largestGapHours.toFixed(2)} hours</p>
-        </div>
+          <section className="movement-map-card">
+            <AgeComparisonMap
+              positions={ageComparisonPositions}
+              selectedAgeClasses={selectedAgeClasses}
+            />
+          </section>
+        </>
       )}
-
-      <SharkMap positions={selectedShark === "ALL" ? [] : displayedPositions} />
     </section>
   );
 }

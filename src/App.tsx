@@ -45,6 +45,10 @@ function App() {
       }
     }
 
+    const validTimestampCount = positions.filter(
+      (position) => !Number.isNaN(new Date(position.DateTimeUTC).getTime()),
+    ).length;
+
     const sharks = Array.from(uniqueSharks.values());
 
     const dates = positions
@@ -60,6 +64,8 @@ function App() {
       unknownSexSharks: sharks.filter(
         (shark) => shark.sex !== "F" && shark.sex !== "M",
       ).length,
+      validTimestamps: validTimestampCount,
+      invalidTimestamps: positions.length - validTimestampCount,
       earliestDate: dates[0] ?? null,
       latestDate: dates[dates.length - 1] ?? null,
     };
@@ -151,6 +157,7 @@ function App() {
               path="/map"
               element={
                 <MovementPage
+                  positions={positions}
                   displayedPositions={displayedPositions}
                   sharkIds={sharkIds}
                   selectedShark={selectedShark}
@@ -160,9 +167,24 @@ function App() {
               }
             />
 
-            <Route path="/analysis" element={<AnalysisPage />} />
+            <Route
+              path="/analysis"
+              element={<AnalysisPage positions={positions} />}
+            />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route
+              path="/map"
+              element={
+                <MovementPage
+                  positions={positions}
+                  displayedPositions={displayedPositions}
+                  sharkIds={sharkIds}
+                  selectedShark={selectedShark}
+                  sharkStatistics={sharkStatistics}
+                  onSelectedSharkChange={setSelectedShark}
+                />
+              }
+            />
           </Routes>
         </main>
       </div>
