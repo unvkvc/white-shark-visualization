@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AgeComparisonMap from "../components/AgeComparisonMap";
-
+import { calculateSharkMovementMetrics } from "../utils/calculateSharkMovementMetrics";
 import SharkMap from "../components/SharkMap";
 import type { SharkPosition } from "../types/SharkPosition";
+import AgeMovementSummary from "../components/AgeMovementSummary";
 
 import "./MovementPage.css";
 
@@ -42,6 +43,13 @@ function MovementPage({
     useState<ExplorationMode>("INDIVIDUAL");
 
   const [selectedAgeClasses, setSelectedAgeClasses] = useState<string[]>([]);
+
+  const movementMetrics = useMemo(
+    () => calculateSharkMovementMetrics(positions),
+    [positions],
+  );
+
+  console.table(movementMetrics);
 
   useEffect(() => {
     const sharkFromUrl = searchParams.get("shark");
@@ -244,6 +252,11 @@ function MovementPage({
               selectedAgeClasses={selectedAgeClasses}
             />
           </section>
+
+          <AgeMovementSummary
+            metrics={movementMetrics}
+            selectedAgeClasses={selectedAgeClasses}
+          />
         </>
       )}
     </section>
