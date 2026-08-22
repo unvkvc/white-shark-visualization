@@ -8,7 +8,15 @@
 }
 
 .movement-header {
-  text-align: center;
+  max-width: 850px;
+  text-align: left;
+}
+
+.movement-header p:last-child {
+  max-width: 760px;
+  margin: 12px 0 0;
+  color: #94a3b8;
+  line-height: 1.6;
 }
 
 .movement-eyebrow {
@@ -23,7 +31,8 @@
 .movement-header h2 {
   margin: 0;
   color: white;
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(2rem, 4vw, 2.7rem);
+  line-height: 1.15;
 }
 
 .movement-header p:last-child {
@@ -315,5 +324,119 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 6px;
+  }
+}
+
+/* ===========================
+   SHARK ANIMATION
+=========================== */
+
+.shark-map {
+  width: 100%;
+}
+
+.animation-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 18px;
+  border-bottom: 1px solid #dbe4ea;
+  background: white;
+}
+
+.animation-buttons {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.animation-button {
+  padding: 8px 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  color: #334155;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.animation-button:hover:not(:disabled) {
+  border-color: #0e7490;
+  color: #0e7490;
+}
+
+.animation-button-primary {
+  border-color: #0e7490;
+  background: #0e7490;
+  color: white;
+}
+
+.animation-button-primary:hover:not(:disabled) {
+  background: #155e75;
+  color: white;
+}
+
+.animation-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.animation-timeline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+}
+
+.animation-timeline input[type="range"] {
+  min-width: 120px;
+  flex: 1;
+  accent-color: #0e7490;
+  cursor: pointer;
+}
+
+.animation-timeline-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  gap: 2px;
+  color: #64748b;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.animation-timeline-info strong {
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.shark-map-container {
+  width: 100%;
+  height: 600px;
+}
+
+@media (max-width: 700px) {
+  .animation-controls {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .animation-timeline {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .animation-timeline-info {
+    min-width: 0;
+  }
+
+  .shark-map-container {
+    height: 500px;
   }
 }

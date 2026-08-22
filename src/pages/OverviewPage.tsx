@@ -243,16 +243,13 @@ function OverviewPage({ statistics }: OverviewPageProps) {
             </div>
 
             <strong className="statistic-value">
-              <p>
-                {statistics.invalidTimestamps.toLocaleString()} observations
-                contain incomplete timestamps. They remain available for spatial
-                summaries but are excluded from chronological movement
-                animation.
-              </p>
+              {statistics.invalidTimestamps.toLocaleString()}
             </strong>
 
             <span className="statistic-description">
-              Observations excluded from chronological animation
+              Observations contain incomplete timestamps. They remain available
+              for spatial summaries but are excluded from chronological movement
+              animation.
             </span>
           </article>
         </div>
@@ -275,7 +272,7 @@ function OverviewPage({ statistics }: OverviewPageProps) {
 
           <p>
             The observations were collected from tagged white sharks tracked in
-            coastal waters off New South Wales, Australia. The Movement Explorer
+            coastal waters off Southern California, USA. The Movement Explorer
             shows where individual sharks were recorded over time.
           </p>
         </article>

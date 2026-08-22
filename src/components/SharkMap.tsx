@@ -370,67 +370,76 @@ function SharkMap({ positions }: SharkMapProps) {
     animationPositions.length === 0 ? 0 : safeAnimationIndex + 1;
 
   const currentDate = currentAnimationItem
-    ? new Date(currentAnimationItem.timestamp).toLocaleString()
+    ? new Date(currentAnimationItem.timestamp).toLocaleString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
     : "No valid timestamp";
 
   return (
-    <div>
+    <div className="shark-map">
       <div className="animation-controls">
-        <button
-          type="button"
-          onClick={() => {
-            if (
-              animationIndex >= animationPositions.length - 1 &&
-              animationPositions.length > 0
-            ) {
+        <div className="animation-buttons">
+          <button
+            type="button"
+            className="animation-button animation-button-primary"
+            onClick={() => {
+              if (
+                animationIndex >= animationPositions.length - 1 &&
+                animationPositions.length > 0
+              ) {
+                setAnimationIndex(0);
+              }
+
+              setIsPlaying((playing) => !playing);
+            }}
+            disabled={animationPositions.length === 0}
+          >
+            {isPlaying ? "Pause" : "Play"}
+          </button>
+
+          <button
+            type="button"
+            className="animation-button"
+            onClick={() => {
               setAnimationIndex(0);
-            }
+              setIsPlaying(false);
+            }}
+            disabled={animationPositions.length === 0}
+          >
+            Restart
+          </button>
+        </div>
 
-            setIsPlaying((playing) => !playing);
-          }}
-          disabled={animationPositions.length === 0}
-        >
-          {isPlaying ? "Pause" : "Play"}
-        </button>
+        <div className="animation-timeline">
+          <input
+            type="range"
+            min={0}
+            max={Math.max(animationPositions.length - 1, 0)}
+            value={safeAnimationIndex}
+            onChange={(event) => {
+              setAnimationIndex(Number(event.target.value));
+              setIsPlaying(false);
+            }}
+            disabled={animationPositions.length === 0}
+            aria-label="Shark animation position"
+          />
 
-        <button
-          type="button"
-          onClick={() => {
-            setAnimationIndex(0);
-            setIsPlaying(false);
-          }}
-          disabled={animationPositions.length === 0}
-        >
-          Restart
-        </button>
+          <div className="animation-timeline-info">
+            <span>
+              Position {displayedPositionNumber.toLocaleString()} of{" "}
+              {animationPositions.length.toLocaleString()}
+            </span>
 
-        <input
-          type="range"
-          min={0}
-          max={Math.max(animationPositions.length - 1, 0)}
-          value={safeAnimationIndex}
-          onChange={(event) => {
-            setAnimationIndex(Number(event.target.value));
-            setIsPlaying(false);
-          }}
-          disabled={animationPositions.length === 0}
-          aria-label="Shark animation position"
-        />
-
-        <span>
-          {displayedPositionNumber} / {animationPositions.length}
-        </span>
-
-        <span>{currentDate}</span>
+            <strong>{currentDate}</strong>
+          </div>
+        </div>
       </div>
 
-      <div
-        ref={mapContainerRef}
-        style={{
-          width: "100%",
-          height: "600px",
-        }}
-      />
+      <div ref={mapContainerRef} className="shark-map-container" />
     </div>
   );
 }

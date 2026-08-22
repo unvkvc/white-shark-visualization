@@ -6,7 +6,6 @@ import {
   CartesianGrid,
   Cell,
   Label,
-  Legend,
   Line,
   LineChart,
   Pie,
@@ -47,8 +46,7 @@ function DetectionTooltip({ active, payload }: CustomTooltipProps) {
   return (
     <div className="analysis-tooltip">
       <strong>Shark {datum.shark}</strong>
-
-      <span>{datum.detections.toLocaleString()} recorded detections</span>
+      <span>{datum.detections.toLocaleString()} tracked positions</span>
     </div>
   );
 }
@@ -193,7 +191,7 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
 
     return {
       id: selectedShark,
-      detections: sharkPositions.length,
+      positions: sharkPositions.length,
       sex:
         representativePosition.sex === "F"
           ? "Female"
@@ -202,8 +200,8 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
             : "Unknown",
       ageClass: representativePosition.ageclass || "Unknown",
       sizeClass: representativePosition.sizeclass || "Unknown",
-      firstDetection: validDates[0] ?? null,
-      lastDetection: validDates[validDates.length - 1] ?? null,
+      firstPosition: validDates[0] ?? null,
+      lastPosition: validDates[validDates.length - 1] ?? null,
     };
   }, [positions, selectedShark]);
 
@@ -215,16 +213,18 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
     navigate(`/map?shark=${encodeURIComponent(selectedShark)}`);
   }
 
+  const sexTotal = sexDistribution.reduce((sum, entry) => sum + entry.value, 0);
+
   return (
     <section className="analysis-page">
       <header className="analysis-header">
         <p className="analysis-eyebrow">Comparative analysis</p>
 
-        <h2>Detection patterns across tagged sharks</h2>
+        <h2>Patterns across tagged sharks</h2>
 
         <p>
-          Compare how frequently each tagged shark was recorded in the
-          high-resolution tracking dataset.
+          Explore differences between individuals and how tracking activity
+          changes through time.
         </p>
       </header>
 
@@ -248,7 +248,7 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
 
           <strong>{Math.round(chartSummary.median).toLocaleString()}</strong>
 
-          <small>Typical detection count across sharks</small>
+          <small>Tracked positions per shark</small>
         </article>
 
         <article className="analysis-summary-card">
@@ -270,12 +270,7 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
         <div className="analysis-card-heading">
           <div>
             <h3>Tagged shark composition</h3>
-
-            <p>Distribution of unique tagged sharks by recorded sex.</p>
-          </div>
-
-          <div className="analysis-note">
-            Each shark is counted once regardless of the number of detections.
+            <p>Unique tagged individuals by recorded sex.</p>
           </div>
         </div>
 
@@ -289,8 +284,8 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
                   nameKey="label"
                   cx="50%"
                   cy="50%"
-                  innerRadius={70}
-                  outerRadius={115}
+                  innerRadius={72}
+                  outerRadius={112}
                   paddingAngle={3}
                   stroke="none"
                 >
@@ -302,35 +297,27 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
                 <Tooltip
                   formatter={(value, name) => [`${value} sharks`, String(name)]}
                 />
-
-                <Legend />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
           <div className="sex-summary-list">
             {sexDistribution.map((entry) => {
-              const total = sexDistribution.reduce(
-                (sum, item) => sum + item.value,
-                0,
-              );
-
-              const percentage = total === 0 ? 0 : (entry.value / total) * 100;
+              const percentage =
+                sexTotal === 0 ? 0 : (entry.value / sexTotal) * 100;
 
               return (
                 <div className="sex-summary-item" key={entry.label}>
                   <span
                     className="sex-summary-color"
-                    style={{
-                      backgroundColor: entry.color,
-                    }}
+                    style={{ backgroundColor: entry.color }}
                   />
 
                   <div>
                     <strong>{entry.label}</strong>
 
                     <span>
-                      {entry.value} sharks ({percentage.toFixed(1)}%)
+                      {entry.value} sharks · {percentage.toFixed(1)}%
                     </span>
                   </div>
                 </div>
@@ -338,12 +325,6 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
             })}
           </div>
         </div>
-
-        <p className="analysis-chart-caption">
-          {selectedShark
-            ? "The chart updates when a shark is selected in the comparison chart. Clear the selection to return to the complete dataset."
-            : "Select a bar in the detections-per-shark chart to inspect that individual’s temporal detection pattern."}
-        </p>
       </section>
 
       <section className="analysis-card">
@@ -351,24 +332,15 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
           <div>
             <h3>
               {selectedShark
-                ? `Monthly detections for shark ${selectedShark}`
-                : "Monthly detections"}
+                ? `Monthly tracked positions · Shark ${selectedShark}`
+                : "Monthly tracked positions"}
             </h3>
 
             <p>
               {selectedShark
-                ? "Monthly distribution of valid detections for the selected shark."
-                : "Number of valid shark detections recorded during each month of the study period."}
+                ? "Temporal distribution of valid positions for the selected individual."
+                : "Valid tracked positions recorded throughout the study period."}
             </p>
-
-            <p>
-              Number of valid shark detections recorded during each month of the
-              study period.
-            </p>
-          </div>
-
-          <div className="analysis-note">
-            Only observations with complete timestamps are included.
           </div>
         </div>
 
@@ -377,7 +349,7 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
             <LineChart
               data={monthlyDetections}
               margin={{
-                top: 20,
+                top: 18,
                 right: 24,
                 bottom: 35,
                 left: 38,
@@ -414,7 +386,7 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
                 tickFormatter={(value) => Number(value).toLocaleString()}
               >
                 <Label
-                  value="Number of detections"
+                  value="Tracked positions"
                   angle={-90}
                   position="insideLeft"
                   style={{
@@ -428,7 +400,7 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
               <Tooltip
                 formatter={(value) => [
                   Number(value).toLocaleString(),
-                  "Detections",
+                  "Tracked positions",
                 ]}
                 labelFormatter={(label) => String(label)}
                 cursor={{
@@ -441,14 +413,14 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
                 type="monotone"
                 dataKey="detections"
                 stroke="#0e7490"
-                strokeWidth={3}
+                strokeWidth={2.5}
                 dot={{
-                  r: 4,
+                  r: 3.5,
                   fill: "#0e7490",
                   strokeWidth: 0,
                 }}
                 activeDot={{
-                  r: 6,
+                  r: 5,
                   fill: "#164e63",
                   stroke: "white",
                   strokeWidth: 2,
@@ -460,26 +432,18 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
         </div>
 
         <p className="analysis-chart-caption">
-          The line reveals changes in recorded detection activity through time.
-          Variation may reflect shark presence, monitoring effort, receiver
-          coverage or timestamp availability.
+          Only observations with valid timestamps are included.
         </p>
       </section>
 
       <section className="analysis-card">
         <div className="analysis-card-heading">
           <div>
-            <h3>Detections per shark</h3>
+            <h3>Tracked positions per shark</h3>
 
             <p>
-              Each bar represents the number of acoustic detections recorded for
-              an individual shark during the study period.
+              Compare the amount of tracking data available for each individual.
             </p>
-          </div>
-
-          <div className="analysis-note">
-            Higher values indicate more recorded detections, not necessarily
-            greater movement.
           </div>
         </div>
 
@@ -488,7 +452,7 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
             <BarChart
               data={detectionsPerShark}
               margin={{
-                top: 20,
+                top: 18,
                 right: 20,
                 bottom: 75,
                 left: 38,
@@ -527,7 +491,7 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
                 tickFormatter={(value) => Number(value).toLocaleString()}
               >
                 <Label
-                  value="Number of detections"
+                  value="Tracked positions"
                   angle={-90}
                   position="insideLeft"
                   style={{
@@ -541,13 +505,13 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
               <Tooltip
                 content={<DetectionTooltip />}
                 cursor={{
-                  fill: "rgba(14, 116, 144, 0.08)",
+                  fill: "rgba(14, 116, 144, 0.06)",
                 }}
               />
 
               <Bar
                 dataKey="detections"
-                radius={[6, 6, 0, 0]}
+                radius={[5, 5, 0, 0]}
                 cursor="pointer"
                 animationDuration={700}
                 onClick={(data) => {
@@ -572,8 +536,8 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
         </div>
 
         <p className="analysis-chart-caption">
-          Click a bar to inspect that individual. Detection counts may also
-          reflect differences in monitoring duration and receiver coverage.
+          Click a bar to inspect an individual. Position count reflects
+          observation availability, not movement distance.
         </p>
 
         {selectedSharkDetails && (
@@ -581,7 +545,6 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
             <div className="selected-shark-panel-heading">
               <div>
                 <p className="selected-shark-eyebrow">Selected individual</p>
-
                 <h3>Shark {selectedSharkDetails.id}</h3>
               </div>
 
@@ -590,52 +553,46 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
                 className="clear-selection-button"
                 onClick={() => setSelectedShark(null)}
               >
-                Clear selection
+                Clear
               </button>
             </div>
 
             <div className="selected-shark-details">
               <div>
-                <span>Recorded detections</span>
-
+                <span>Tracked positions</span>
                 <strong>
-                  {selectedSharkDetails.detections.toLocaleString()}
+                  {selectedSharkDetails.positions.toLocaleString()}
                 </strong>
               </div>
 
               <div>
                 <span>Sex</span>
-
                 <strong>{selectedSharkDetails.sex}</strong>
               </div>
 
               <div>
                 <span>Age class</span>
-
                 <strong>{selectedSharkDetails.ageClass}</strong>
               </div>
 
               <div>
                 <span>Size class</span>
-
                 <strong>{selectedSharkDetails.sizeClass}</strong>
               </div>
 
               <div>
-                <span>First valid detection</span>
-
+                <span>First valid position</span>
                 <strong>
-                  {selectedSharkDetails.firstDetection?.toLocaleDateString(
+                  {selectedSharkDetails.firstPosition?.toLocaleDateString(
                     "en-GB",
                   ) ?? "Unknown"}
                 </strong>
               </div>
 
               <div>
-                <span>Last valid detection</span>
-
+                <span>Last valid position</span>
                 <strong>
-                  {selectedSharkDetails.lastDetection?.toLocaleDateString(
+                  {selectedSharkDetails.lastPosition?.toLocaleDateString(
                     "en-GB",
                   ) ?? "Unknown"}
                 </strong>
@@ -647,7 +604,7 @@ function AnalysisPage({ positions }: AnalysisPageProps) {
               className="open-movement-button"
               onClick={openMovementExplorer}
             >
-              Open in Movement Explorer
+              Open in Movement Explorer →
             </button>
           </section>
         )}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import type { SharkPosition } from "./types/SharkPosition";
 import { loadSharkPositions } from "./utils/loadSharks";
@@ -170,20 +170,6 @@ function App() {
             <Route
               path="/analysis"
               element={<AnalysisPage positions={positions} />}
-            />
-
-            <Route
-              path="/map"
-              element={
-                <MovementPage
-                  positions={positions}
-                  displayedPositions={displayedPositions}
-                  sharkIds={sharkIds}
-                  selectedShark={selectedShark}
-                  sharkStatistics={sharkStatistics}
-                  onSelectedSharkChange={setSelectedShark}
-                />
-              }
             />
           </Routes>
         </main>
