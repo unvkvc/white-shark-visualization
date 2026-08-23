@@ -75,11 +75,14 @@
 
 @media (max-width: 700px) {
   .app-header-content {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 14px;
-    padding-top: 14px;
-    padding-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: min(1440px, calc(100% - 64px));
+    min-height: 72px;
+
+    margin: 0 auto;
   }
 
   .app-navigation {

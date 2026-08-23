@@ -31,33 +31,25 @@ function formatDate(date: Date | null): string {
 }
 
 function OverviewPage({ statistics }: OverviewPageProps) {
-  const knownSexSharks = statistics.femaleSharks + statistics.maleSharks;
-
-  const femalePercentage =
-    knownSexSharks > 0 ? (statistics.femaleSharks / knownSexSharks) * 100 : 0;
-
-  const malePercentage =
-    knownSexSharks > 0 ? (statistics.maleSharks / knownSexSharks) * 100 : 0;
-
   return (
     <section className="overview-page">
       <header
         className="overview-hero"
         style={{
           backgroundImage: `
-      radial-gradient(
-        circle at top right,
-        rgba(45, 212, 191, 0.38),
-        transparent 45%
-      ),
-      linear-gradient(
-        110deg,
-        rgba(2, 8, 20, 0.97) 0%,
-        rgba(6, 38, 67, 0.88) 45%,
-        rgba(8, 105, 135, 0.68) 100%
-      ),
-      url(${sharkBackground})
-    `,
+            radial-gradient(
+              circle at top right,
+              rgba(45, 212, 191, 0.38),
+              transparent 45%
+            ),
+            linear-gradient(
+              110deg,
+              rgba(2, 8, 20, 0.97) 0%,
+              rgba(6, 38, 67, 0.88) 45%,
+              rgba(8, 105, 135, 0.68) 100%
+            ),
+            url(${sharkBackground})
+          `,
         }}
       >
         <div>
@@ -85,267 +77,80 @@ function OverviewPage({ statistics }: OverviewPageProps) {
 
       <section className="overview-section">
         <div className="section-heading">
-          <h3>Dataset summary</h3>
+          <h3>Dataset at a glance</h3>
 
           <p>
-            An overview of the tagged sharks and tracking detections included in
-            the dataset.
+            Key characteristics of the tagged sharks and recorded positions.
           </p>
         </div>
 
-        <div className="statistics-grid">
-          <article className="statistic-card">
-            <div className="statistic-card-header">
-              <span className="statistic-icon" aria-hidden="true">
-                📍
-              </span>
+        <div className="dataset-summary">
+          <div className="dataset-summary-item">
+            <span className="dataset-summary-label">Tracked positions</span>
 
-              <span className="statistic-label">Tracking detections</span>
-            </div>
+            <strong>{statistics.totalPositions.toLocaleString()}</strong>
 
-            <strong className="statistic-value">
-              {statistics.totalPositions.toLocaleString()}
-            </strong>
+            <small>Recorded spatial observations</small>
+          </div>
 
-            <span className="statistic-description">
-              Recorded spatial observations
-            </span>
-          </article>
+          <div className="dataset-summary-item">
+            <span className="dataset-summary-label">Tagged sharks</span>
 
-          <article className="statistic-card">
-            <div className="statistic-card-header">
-              <span className="statistic-icon" aria-hidden="true">
-                🦈
-              </span>
+            <strong>{statistics.uniqueSharks}</strong>
 
-              <span className="statistic-label">Tagged sharks</span>
-            </div>
+            <small>Unique individuals</small>
+          </div>
 
-            <strong className="statistic-value">
-              {statistics.uniqueSharks}
-            </strong>
+          <div className="dataset-summary-item">
+            <span className="dataset-summary-label">Tracking period</span>
 
-            <span className="statistic-description">
-              Unique tagged individuals
-            </span>
-          </article>
-
-          <article className="statistic-card">
-            <div className="statistic-card-header">
-              <span
-                className="statistic-icon statistic-icon-text"
-                aria-hidden="true"
-              >
-                ♀
-              </span>
-
-              <span className="statistic-label">Female sharks</span>
-            </div>
-
-            <strong className="statistic-value">
-              {statistics.femaleSharks}
-            </strong>
-
-            <span className="statistic-description">
-              {femalePercentage.toFixed(1)}% of sharks with known sex
-            </span>
-          </article>
-
-          <article className="statistic-card">
-            <div className="statistic-card-header">
-              <span
-                className="statistic-icon statistic-icon-text"
-                aria-hidden="true"
-              >
-                ♂
-              </span>
-
-              <span className="statistic-label">Male sharks</span>
-            </div>
-
-            <strong className="statistic-value">{statistics.maleSharks}</strong>
-
-            <span className="statistic-description">
-              {malePercentage.toFixed(1)}% of sharks with known sex
-            </span>
-          </article>
-
-          <article className="statistic-card">
-            <div className="statistic-card-header">
-              <span
-                className="statistic-icon statistic-icon-text"
-                aria-hidden="true"
-              >
-                ?
-              </span>
-
-              <span className="statistic-label">Unknown sex</span>
-            </div>
-
-            <strong className="statistic-value">
-              {statistics.unknownSexSharks}
-            </strong>
-
-            <span className="statistic-description">
-              Individuals without a recorded sex classification
-            </span>
-          </article>
-
-          <article className="statistic-card">
-            <div className="statistic-card-header">
-              <span className="statistic-icon" aria-hidden="true">
-                📅
-              </span>
-
-              <span className="statistic-label">Tracking period</span>
-            </div>
-
-            <strong className="statistic-date-range">
+            <strong className="dataset-summary-date">
               {formatDate(statistics.earliestDate)}
             </strong>
 
-            <span className="statistic-description">
-              to {formatDate(statistics.latestDate)}
-            </span>
-          </article>
+            <small>to {formatDate(statistics.latestDate)}</small>
+          </div>
 
-          <article className="statistic-card">
-            <div className="statistic-card-header">
-              <span
-                className="statistic-icon statistic-icon-text statistic-icon-success"
-                aria-hidden="true"
-              >
-                ✓
-              </span>
+          <div className="dataset-summary-item">
+            <span className="dataset-summary-label">Recorded sex</span>
 
-              <span className="statistic-label">Valid timestamps</span>
-            </div>
-
-            <strong className="statistic-value">
-              {statistics.validTimestamps.toLocaleString()}
+            <strong className="dataset-summary-sex">
+              {statistics.femaleSharks} F · {statistics.maleSharks} M
             </strong>
 
-            <span className="statistic-description">
-              Observations available for chronological animation
-            </span>
-          </article>
-
-          <article className="statistic-card">
-            <div className="statistic-card-header">
-              <span
-                className="statistic-icon statistic-icon-text statistic-icon-warning"
-                aria-hidden="true"
-              >
-                !
-              </span>
-
-              <span className="statistic-label">Incomplete timestamps</span>
-            </div>
-
-            <strong className="statistic-value">
-              {statistics.invalidTimestamps.toLocaleString()}
-            </strong>
-
-            <span className="statistic-description">
-              Observations contain incomplete timestamps. They remain available
-              for spatial summaries but are excluded from chronological movement
-              animation.
-            </span>
-          </article>
+            <small>{statistics.unknownSexSharks} unknown</small>
+          </div>
         </div>
+
+        <p className="timestamp-summary">
+          <strong>{statistics.validTimestamps.toLocaleString()}</strong>{" "}
+          positions contain complete timestamps and can be used for
+          chronological animation;{" "}
+          <strong>{statistics.invalidTimestamps.toLocaleString()}</strong> have
+          incomplete timestamps.
+        </p>
       </section>
 
-      <section className="overview-section overview-information-grid">
-        <article className="information-card">
-          <h3>About the dataset</h3>
+      <section className="overview-context">
+        <div className="overview-context-main">
+          <h3>About the data</h3>
 
           <p>
             The dataset contains high-resolution spatial observations of tagged
-            white sharks. Each row represents a recorded shark position together
-            with attributes such as shark identifier, sex, age class, size class
-            and timestamp.
-          </p>
-        </article>
-
-        <article className="information-card">
-          <h3>Study area</h3>
-
-          <p>
-            The observations were collected from tagged white sharks tracked in
-            coastal waters off Southern California, USA. The Movement Explorer
-            shows where individual sharks were recorded over time.
-          </p>
-        </article>
-
-        <article className="information-card">
-          <h3>How to interpret the map</h3>
-
-          <p>
-            Recorded positions are observations rather than a complete,
-            continuous account of each shark&apos;s movement. Long gaps between
-            timestamps may indicate periods in which no valid position was
-            available.
-          </p>
-        </article>
-
-        <article className="information-card">
-          <h3>Data quality</h3>
-
-          <p>
-            Some timestamp values in the source data cannot be interpreted as
-            complete dates. These observations may still be counted in the
-            dataset summary, but they are excluded from chronological movement
-            animation.
-          </p>
-        </article>
-      </section>
-
-      <section className="overview-section">
-        <div className="section-heading">
-          <h3>Explore the data</h3>
-
-          <p>
-            Use the interactive views to investigate individual movement records
-            and compare patterns across the dataset.
+            white sharks tracked in coastal waters off Southern California, USA.
+            Each record includes a shark identifier, position, sex, age class,
+            size class and timestamp.
           </p>
         </div>
 
-        <div className="exploration-grid">
-          <Link className="exploration-card" to="/map">
-            <span className="exploration-card-icon" aria-hidden="true">
-              🗺️
-            </span>
+        <div className="overview-context-note">
+          <h3>Interpreting movement</h3>
 
-            <div>
-              <h4>Movement Explorer</h4>
-
-              <p>
-                Select a tagged shark and replay its recorded positions through
-                time on an interactive map.
-              </p>
-
-              <span className="exploration-card-action">
-                Explore movements →
-              </span>
-            </div>
-          </Link>
-
-          <Link className="exploration-card" to="/analysis">
-            <span className="exploration-card-icon" aria-hidden="true">
-              📊
-            </span>
-
-            <div>
-              <h4>Comparison and Analysis</h4>
-
-              <p>
-                Compare sharks by detection count, attributes and temporal
-                distribution.
-              </p>
-
-              <span className="exploration-card-action">View analysis →</span>
-            </div>
-          </Link>
+          <p>
+            Recorded positions are observations rather than a continuous
+            reconstruction of movement. Gaps between timestamps indicate periods
+            without valid chronological positions.
+          </p>
         </div>
       </section>
     </section>
